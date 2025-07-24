@@ -532,7 +532,7 @@ def main(page: ft.Page):
                 [
                     ft.AppBar(
                         title=ft.Text("Acciones"),
-                        leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda _: page.views.pop())
+                        leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda _: page.views.pop())
                     ),
                     ft.Column(controles, spacing=10)
                 ]
