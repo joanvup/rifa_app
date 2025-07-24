@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mb-4 text-center">Sistema de Control de Rifas</h1>
+        
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{{ url_for('configuracion') }}" class="btn btn-outline-primary me-2">
+                Configuración
+            </a>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">Crear Nuevo Talonario</h2>
+                <form action="/crear_talonario" method="POST">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" name="nombre" placeholder="Nombre del talonario" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Crear Talonario</button>
+                </form>
+            </div>
+        </div>
+        
+        <h2 class="mb-3">Talonarios Existentes</h2>
+        <div class="list-group">
+            {% for talonario in talonarios %}
+                <a href="{{ url_for('ver_talonario', talonario_id=talonario.id) }}" 
+                   class="list-group-item list-group-item-action">
+                    {{ talonario.nombre }}
+                </a>
+            {% else %}
+                <div class="list-group-item">No hay talonarios creados</div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

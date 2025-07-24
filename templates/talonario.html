@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <!-- Encabezado fijo -->
+    <div class="header-section">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h5 mb-0">Talonario: {{ talonario.nombre }}</h1>
+            <div>
+                <a href="{{ url_for('sorteo', talonario_id=talonario.id) }}" class="btn btn-success btn-sm me-2">
+                    Realizar Sorteo
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+                    &larr; Volver
+                </a>
+            </div>
+        </div>
+        
+        <!-- Resumen Financiero (ARRIBA DE LAS LEYENDAS) -->
+        <div class="d-flex justify-content-center gap-3 mt-1">
+            <div class="d-flex align-items-center">
+                <span class="small">Total: ${{ total_esperado|currency }}</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="small">Recaudado: ${{ recaudado|currency }}</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="small">Por Recaudar: ${{ por_recaudar|currency }}</span>
+            </div>
+        </div>
+        
+        <!-- Leyenda compacta -->
+        <div class="d-flex flex-wrap justify-content-center gap-1">
+            <div class="d-flex align-items-center">
+                <div class="leyenda-item disponible me-1"></div>
+                <span class="small">Disponible</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="leyenda-item ocupado me-1"></div>
+                <span class="small">Ocupado</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="leyenda-item pagado me-1"></div>
+                <span class="small">Pagado</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenido principal (100 números) -->
+    <div class="content-section">
+        <div class="grid-container">
+            {% for numero in numeros %}
+                <div class="numero-celda {{ numero.estado }}" 
+                     onclick="abrirModal({{ numero.id }}, '{{ numero.estado }}')">
+                    <strong>{{ "%02d" % numero.numero }}</strong>
+                    {% if numero.nombre_persona %}
+                        <div class="nombre-persona">{{ numero.nombre_persona }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Pie de página fijo -->
+    <div class="footer-section">
+        <small>Sistema de Rifas &copy; {{ now.year }}</small>
+    </div>
+    
+    <!-- Modal de Acciones -->
+    <div class="modal fade" id="accionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" id="accionForm">
+                    <input type="hidden" name="numero_id" id="modalNumeroId" value="">
+                    
+                    <div class="modal-header">
+                        <h5 class="modal-title">Acciones para el Número</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <div class="mb-3" id="nombreGroup">
+                            <label class="form-label">Nombre:</label>
+                            <input type="text" class="form-control" name="nombre" id="nombreInput">
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-warning" 
+                                    onclick="setAccion('asignar'); submitForm();" 
+                                    id="asignarBtn">
+                                Asignar
+                            </button>
+                            <button type="button" class="btn btn-success" 
+                                    onclick="setAccion('asignar_pagar'); submitForm();" 
+                                    id="asignarPagarBtn">
+                                Asignar y Pagar
+                            </button>
+                            <button type="button" class="btn btn-info" 
+                                    onclick="setAccion('pagar'); submitForm();" 
+                                    id="pagarBtn">
+                                Marcar como Pagado
+                            </button>
+                            <button type="button" class="btn btn-danger" 
+                                    onclick="setAccion('desasignar'); submitForm();" 
+                                    id="desasignarBtn">
+                                Desasignar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variable global para la acción
+        let currentAction = '';
+        
+        function setAccion(accion) {
+            currentAction = accion;
+        }
+        
+        function submitForm() {
+            const form = document.getElementById('accionForm');
+            const numeroId = document.getElementById('modalNumeroId').value;
+            
+            // Crear un campo oculto para la acción
+            const accionInput = document.createElement('input');
+            accionInput.type = 'hidden';
+            accionInput.name = 'accion';
+            accionInput.value = currentAction;
+            form.appendChild(accionInput);
+            
+            form.action = `/accion_numero/${numeroId}`;
+            form.submit();
+        }
+        
+        function abrirModal(numeroId, estado) {
+            const modal = new bootstrap.Modal(document.getElementById('accionModal'));
+            document.getElementById('modalNumeroId').value = numeroId;
+            document.getElementById('nombreInput').value = '';
+            
+            // Resetear todos los botones
+            document.getElementById('nombreGroup').style.display = 'block';
+            document.getElementById('asignarBtn').style.display = 'block';
+            document.getElementById('asignarPagarBtn').style.display = 'block';
+            document.getElementById('pagarBtn').style.display = 'block';
+            document.getElementById('desasignarBtn').style.display = 'block';
+            
+            // Ocultar elementos según el estado
+            if (estado === 'disponible') {
+                document.getElementById('pagarBtn').style.display = 'none';
+            } 
+            else if (estado === 'ocupado') {
+                document.getElementById('asignarBtn').style.display = 'none';
+                document.getElementById('asignarPagarBtn').style.display = 'none';
+            } 
+            else if (estado === 'pagado') {
+                document.getElementById('nombreGroup').style.display = 'none';
+                document.getElementById('asignarBtn').style.display = 'none';
+                document.getElementById('asignarPagarBtn').style.display = 'none';
+                document.getElementById('pagarBtn').style.display = 'none';
+            }
+            
+            modal.show();
+        }
+        
+        // Ajustar automáticamente el tamaño de fuente para nombres largos
+        function ajustarFuentes() {
+            const celdas = document.querySelectorAll('.numero-celda');
+            celdas.forEach(celda => {
+                const nombre = celda.querySelector('.nombre-persona');
+                if (nombre) {
+                    // Calcular tamaño basado en espacio disponible
+                    const alturaCelda = celda.offsetHeight;
+                    const espacioNombre = alturaCelda * 0.4;
+                    
+                    // Ajustar tamaño de fuente
+                    nombre.style.fontSize = Math.min(espacioNombre * 0.8, 10) + 'px';
+                    nombre.style.lineHeight = '1.1';
+                }
+            });
+        }
+        
+        // Ajustar el grid para ocupar el espacio disponible
+        function ajustarGrid() {
+            const contentSection = document.querySelector('.content-section');
+            const gridContainer = document.querySelector('.grid-container');
+            
+            // Calcular tamaño máximo posible manteniendo relación 1:1
+            const maxSize = Math.min(
+                contentSection.offsetWidth, 
+                contentSection.offsetHeight
+            );
+            
+            gridContainer.style.width = maxSize + 'px';
+            gridContainer.style.height = maxSize + 'px';
+        }
+        
+        // Ejecutar al cargar y al cambiar tamaño
+        window.addEventListener('load', () => {
+            ajustarGrid();
+            ajustarFuentes();
+        });
+        window.addEventListener('resize', () => {
+            ajustarGrid();
+            ajustarFuentes();
+        });
+    </script>
+{% endblock %}

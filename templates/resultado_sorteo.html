@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4" style="overflow-y: auto; max-height: calc(100vh - 100px);">
+    <h1 class="mb-4">Resultados del Sorteo</h1>
+    <h2>Talonario: {{ talonario.nombre }}</h2>
+    <h3>Número Ganador: {{ sorteo.numero_ganador }}</h3>
+    <p>Fecha: {{ sorteo.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            Resumen de Premios
+        </div>
+        <div class="card-body">
+            <p>Total Esperado: ${{ total_esperado|currency }}</p>
+            <p>Premio Primeras 2 Cifras ({{ primeras }}): ${{ premio_primeras|currency }} ({{ config.porcentaje_primeras }}%)</p>
+            <p>Premio 2 Cifras del Medio ({{ medio }}): ${{ premio_medio|currency }} ({{ config.porcentaje_medio }}%)</p>
+            <p>Premio Últimas 2 Cifras ({{ ultimas }}): ${{ premio_ultimas|currency }} ({{ config.porcentaje_ultimas }}%)</p>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            Ganadores por Categoría
+        </div>
+        <div class="card-body">
+            <h4>Primeras 2 Cifras ({{ primeras }}):</h4>
+            {% if ganadores_primeras %}
+                <ul>
+                    {% for g in ganadores_primeras %}
+                        <li>Número {{ "%02d"|format(g.numero) }}: {{ g.nombre_persona }} - Premio: ${{ (premio_primeras / ganadores_primeras|length)|currency if ganadores_primeras|length > 0 else 0 }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No hay ganadores en esta categoría</p>
+            {% endif %}
+            
+            <h4>2 Cifras del Medio ({{ medio }}):</h4>
+            {% if ganadores_medio %}
+                <ul>
+                    {% for g in ganadores_medio %}
+                        <li>Número {{ "%02d"|format(g.numero) }}: {{ g.nombre_persona }} - Premio: ${{ (premio_medio / ganadores_medio|length)|currency if ganadores_medio|length > 0 else 0 }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No hay ganadores en esta categoría</p>
+            {% endif %}
+            
+            <h4>Últimas 2 Cifras ({{ ultimas }}):</h4>
+            {% if ganadores_ultimas %}
+                <ul>
+                    {% for g in ganadores_ultimas %}
+                        <li>Número {{ "%02d"|format(g.numero) }}: {{ g.nombre_persona }} - Premio: ${{ (premio_ultimas / ganadores_ultimas|length)|currency if ganadores_ultimas|length > 0 else 0 }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No hay ganadores en esta categoría</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            Premios por Persona
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Premio Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in premios_persona %}
+                        <tr>
+                            <td>{{ p.nombre }}</td>
+                            <td>${{ p.premio|currency }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="2">No hay ganadores</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="d-grid">
+        <a href="{{ url_for('ver_talonario', talonario_id=talonario.id) }}" class="btn btn-primary">
+            Volver al Talonario
+        </a>
+    </div>
+</div>
+{% endblock %}

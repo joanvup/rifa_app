@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Realizar Sorteo - {{ talonario.nombre }}</h1>
+    
+    <form method="POST" action="{{ url_for('sorteo', talonario_id=talonario.id) }}">
+        <div class="mb-3">
+            <label class="form-label">Número Ganador (4 dígitos):</label>
+            <input type="text" class="form-control" name="numero_ganador" 
+                   pattern="\d{4}" title="Debe ser un número de 4 dígitos" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Realizar Sorteo</button>
+    </form>
+</div>
+{% endblock %}
