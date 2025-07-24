@@ -3,7 +3,6 @@
 Una aplicación web desarrollada en Python para gestionar y administrar rifas de forma sencilla e intuitiva. El proyecto está diseñado con un enfoque **mobile-first**, optimizado para una visualización perfecta en dispositivos móviles.
 
 ![Captura de Pantalla de la App](https-placeholder-for-your-image.png)
-*(Recomendación: Reemplaza la imagen de arriba con una captura de pantalla real de tu aplicación)*
 
 ## ✨ Características Principales
 
