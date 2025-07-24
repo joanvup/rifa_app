@@ -1,6 +1,7 @@
 import flet as ft
-from sqlalchemy import create_engine, select, func
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, func
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import Session as SQLASession
 from datetime import datetime
 import os
 
@@ -15,31 +16,31 @@ Base = declarative_base()
 
 class Configuracion(Base):
     __tablename__ = 'configuracion'
-    id = ft.Column(ft.Integer, primary_key=True)
-    precio_boleta = ft.Column(ft.Float, default=100.0)
-    porcentaje_primeras = ft.Column(ft.Float, default=25.0)
-    porcentaje_medio = ft.Column(ft.Float, default=10.0)
-    porcentaje_ultimas = ft.Column(ft.Float, default=40.0)
+    id = Column(Integer, primary_key=True)
+    precio_boleta = Column(Float, default=100.0)
+    porcentaje_primeras = Column(Float, default=25.0)
+    porcentaje_medio = Column(Float, default=10.0)
+    porcentaje_ultimas = Column(Float, default=40.0)
 
 class Talonario(Base):
     __tablename__ = 'talonario'
-    id = ft.Column(ft.Integer, primary_key=True)
-    nombre = ft.Column(ft.String(100), nullable=False)
+    id = Column(Integer, primary_key=True)
+    nombre = Column(String(100), nullable=False)
 
 class Numero(Base):
     __tablename__ = 'numero'
-    id = ft.Column(ft.Integer, primary_key=True)
-    talonario_id = ft.Column(ft.Integer, ft.ForeignKey('talonario.id'), nullable=False)
-    numero = ft.Column(ft.Integer, nullable=False)
-    estado = ft.Column(ft.String(20), default='disponible')
-    nombre_persona = ft.Column(ft.String(100))
+    id = Column(Integer, primary_key=True)
+    talonario_id = Column(Integer, ForeignKey('talonario.id'), nullable=False)
+    numero = Column(Integer, nullable=False)
+    estado = Column(String(20), default='disponible')
+    nombre_persona = Column(String(100))
 
 class Sorteo(Base):
     __tablename__ = 'sorteo'
-    id = ft.Column(ft.Integer, primary_key=True)
-    talonario_id = ft.Column(ft.Integer, ft.ForeignKey('talonario.id'), nullable=False)
-    numero_ganador = ft.Column(ft.String(4), nullable=False)
-    fecha = ft.Column(ft.DateTime, default=datetime.utcnow)
+    id = Column(Integer, primary_key=True)
+    talonario_id = Column(Integer, ForeignKey('talonario.id'), nullable=False)
+    numero_ganador = Column(String(4), nullable=False)
+    fecha = Column(DateTime, default=datetime.utcnow)
 
 # Crear tablas si no existen
 Base.metadata.create_all(engine)
@@ -56,16 +57,11 @@ def main(page: ft.Page):
     page.scroll = ft.ScrollMode.ADAPTIVE
     page.padding = 10
     
-    # Variables de estado
-    current_talonario = ft.Ref[ft.Text]()
-    current_numero = ft.Ref[ft.Text]()
-    current_sorteo = ft.Ref[ft.Text]()
-    
     # Colores para los estados
     COLORES = {
-        'disponible': ft.colors.GREEN_100,
-        'ocupado': ft.colors.AMBER_100,
-        'pagado': ft.colors.LIGHT_GREEN_200
+        'disponible': ft.Colors.GREEN_100,
+        'ocupado': ft.Colors.AMBER_100,
+        'pagado': ft.Colors.LIGHT_GREEN_200
     }
     
     # -------------------------
@@ -234,7 +230,7 @@ def main(page: ft.Page):
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
                     bgcolor=COLORES[estado],
-                    border=ft.border.all(1, ft.colors.GREY_400),
+                    border=ft.border.all(1, ft.Colors.GREY_400),
                     border_radius=5,
                     padding=5,
                     on_click=lambda e, num_id=n.id: mostrar_acciones_numero(e, num_id, estado)
@@ -246,17 +242,17 @@ def main(page: ft.Page):
             [
                 ft.Container(
                     width=20, height=20, bgcolor=COLORES['disponible'], 
-                    border=ft.border.all(1, ft.colors.GREY_400)
+                    border=ft.border.all(1, ft.Colors.GREY_400)
                 ),
                 ft.Text("Disponible"),
                 ft.Container(
                     width=20, height=20, bgcolor=COLORES['ocupado'], 
-                    border=ft.border.all(1, ft.colors.GREY_400)
+                    border=ft.border.all(1, ft.Colors.GREY_400)
                 ),
                 ft.Text("Ocupado"),
                 ft.Container(
                     width=20, height=20, bgcolor=COLORES['pagado'], 
-                    border=ft.border.all(1, ft.colors.GREY_400)
+                    border=ft.border.all(1, ft.Colors.GREY_400)
                 ),
                 ft.Text("Pagado"),
             ],
@@ -268,11 +264,11 @@ def main(page: ft.Page):
             [
                 ft.AppBar(
                     title=ft.Text(f"Talonario: {talonario.nombre}"),
-                    leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda _: page.views.pop()),
+                    leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda _: page.views.pop()),
                     actions=[
-                        ft.IconButton(ft.icons.CARD_GIFTCARD, 
+                        ft.IconButton(ft.Icons.CARD_GIFTCARD, 
                                      on_click=lambda e: go_sorteo_form(e, talonario_id)),
-                        ft.IconButton(ft.icons.HOME, on_click=go_home)
+                        ft.IconButton(ft.Icons.HOME, on_click=go_home)
                     ]
                 ),
                 ft.Row(
@@ -322,8 +318,8 @@ def main(page: ft.Page):
             [
                 ft.AppBar(
                     title=ft.Text("Configuración"),
-                    leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda _: page.views.pop()),
-                    actions=[ft.IconButton(ft.icons.HOME, on_click=go_home)]
+                    leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda _: page.views.pop()),
+                    actions=[ft.IconButton(ft.Icons.HOME, on_click=go_home)]
                 ),
                 ft.TextField(ref=precio, label="Precio por boleta", 
                             value=str(config.precio_boleta)),
@@ -360,8 +356,8 @@ def main(page: ft.Page):
             [
                 ft.AppBar(
                     title=ft.Text(f"Sorteo: {talonario.nombre}"),
-                    leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda _: page.views.pop()),
-                    actions=[ft.IconButton(ft.icons.HOME, on_click=go_home)]
+                    leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda _: page.views.pop()),
+                    actions=[ft.IconButton(ft.Icons.HOME, on_click=go_home)]
                 ),
                 ft.TextField(ref=numero_ganador, label="Número ganador (4 dígitos)"),
                 ft.ElevatedButton("Realizar Sorteo", on_click=realizar_sorteo_click)
@@ -389,19 +385,19 @@ def main(page: ft.Page):
         # Buscar ganadores
         ganadores_primeras = session.query(Numero).filter(
             Numero.talonario_id == talonario.id,
-            func.cast(Numero.numero, ft.String).like(f"{primeras}%"),
+            func.cast(Numero.numero, String).like(f"{primeras}%"),
             Numero.estado == 'pagado'
         ).all()
         
         ganadores_medio = session.query(Numero).filter(
             Numero.talonario_id == talonario.id,
-            func.cast(Numero.numero, ft.String).like(f"{medio}%"),
+            func.cast(Numero.numero, String).like(f"{medio}%"),
             Numero.estado == 'pagado'
         ).all()
         
         ganadores_ultimas = session.query(Numero).filter(
             Numero.talonario_id == talonario.id,
-            func.cast(Numero.numero, ft.String).like(f"{ultimas}%"),
+            func.cast(Numero.numero, String).like(f"{ultimas}%"),
             Numero.estado == 'pagado'
         ).all()
         
@@ -484,13 +480,14 @@ def main(page: ft.Page):
             [
                 ft.AppBar(
                     title=ft.Text(f"Resultado Sorteo: {sorteo.numero_ganador}"),
-                    leading=ft.IconButton(ft.icons.ARROW_BACK, on_click=lambda _: page.views.pop()),
-                    actions=[ft.IconButton(ft.icons.HOME, on_click=go_home)]
+                    leading=ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda _: page.views.pop()),
+                    actions=[ft.IconButton(ft.Icons.HOME, on_click=go_home)]
                 ),
                 contenido,
                 ft.ElevatedButton("Volver al Talonario", 
                                  on_click=lambda e: go_talonario(e, talonario.id))
-            ]
+            ],
+            scroll=ft.ScrollMode.AUTO
         )
     
     # -------------------------
